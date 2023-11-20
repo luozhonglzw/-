@@ -2,18 +2,22 @@ package com.hmdp.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.json.JSONUtil;
 import com.hmdp.dto.Result;
+import com.hmdp.entity.Shop;
 import com.hmdp.entity.ShopType;
 import com.hmdp.mapper.ShopTypeMapper;
 import com.hmdp.service.IShopTypeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,13 +61,13 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
         log.info(1+"----------"+map);
         //2.判断redis中是否有数据
         if(map!=null){//不为空 空为true
-            //3.redis中有数据直接返回
-            return Result.ok(map);
+            //3.redis中有数据直接返回 将获取的json格式的字符串转为list
+            List<ShopType> shopType = JSONUtil.toList(map,ShopType.class);
+            return Result.ok(shopType);
 
         }
         //4.redis中没有数据查询数据库
         List<ShopType> shopType = typeService.query().orderByAsc("sort").list();
-//        List<ShopType> shopType = shopTypeMapper.selectList(null);
         log.info(2+"------------"+shopType.toString());
         //5.判断查询数据库中是否有数据
         if(shopType.isEmpty()){
@@ -72,7 +76,7 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
         }
 
         //7.有数据 写入redis
-        stringRedisTemplate.opsForValue().set(key, shopType.toString());
+        stringRedisTemplate.opsForValue().set(key,JSONUtil.toJsonStr(shopType));
         //8. 返回
         return Result.ok(shopType);
     }
