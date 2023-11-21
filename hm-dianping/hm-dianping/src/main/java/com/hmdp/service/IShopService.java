@@ -21,4 +21,12 @@ public interface IShopService extends IService<Shop> {
      * @return
      */
     Result queryById(Long id);
+
+
+    /**
+     * 修改数据时 删除缓存
+     * @param shop
+     * @return
+     */
+    Result update(Shop shop);
 }
