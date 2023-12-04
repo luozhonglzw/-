@@ -80,4 +80,18 @@ public class BlogController {
     }
 
 
+    @GetMapping("/of/user")
+    public Result queryByUserId(@RequestParam(value = "current",defaultValue = "1") Integer current,
+                                @RequestParam("id") Long id){
+        //根据用户分页查询用户的blog
+        Page<Blog> page = blogService.query()
+                .eq("user_id", id)
+                .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
+        //设置分页与分页的大小
+
+        List<Blog> records = page.getRecords();
+        return Result.ok(records);
+
+    }
+
 }
